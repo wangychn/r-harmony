@@ -1,10 +1,15 @@
+library(shiny)
+
+# using a typescript library called OSMD to render sheet
+# this is why I need a embedded html code chunk
+# More info here: https://github.com/opensheetmusicdisplay/opensheetmusicdisplay
 osmd_ui <- function() {
-  shiny::tagList(
-    shiny::tags$head(
-      shiny::tags$script(
+  tagList(
+    tags$head(
+      tags$script(
         src = "https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.9.3/build/opensheetmusicdisplay.min.js"
       ),
-      shiny::tags$script(shiny::HTML("
+      tags$script(HTML("
         let osmd;
         Shiny.addCustomMessageHandler(
           'osmd-render',
@@ -24,7 +29,7 @@ osmd_ui <- function() {
         );
       "))
     ),
-    shiny::tags$div(id = "osmd", style = "min-height:900px;overflow-x:auto;")
+    tags$div(id = "osmd", style = "min-height:900px;overflow-x:auto;")
   )
 }
 

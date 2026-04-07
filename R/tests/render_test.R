@@ -1,10 +1,10 @@
 library(shiny)
 
-render_test <- function(path = "sheets/Arabesque_L._66_No._1_in_E_Major/score.xml") {
+render_test <- function(path = "sheets/Arabesque, Op. 66, No. 1/score.xml") {
   source("R/sheet_drawer.R")
 
-  shiny::shinyApp(
-    ui = shiny::fluidPage(
+  shinyApp(
+    ui = fluidPage(
       osmd_ui()
     ),
     server = function(input, output, session) {

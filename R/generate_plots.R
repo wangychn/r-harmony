@@ -1,3 +1,43 @@
+library(ggplot2)
+
+# ========= custom theme ==========
+pitch_levels <- c("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
+
+pitch_palette <- c(
+    "C" = "#264653",
+    "Db" = "#2A9D8F",
+    "D" = "#3A86A8",
+    "Eb" = "#577590",
+    "E" = "#7B6D8D",
+    "F" = "#E9C46A",
+    "Gb" = "#F4A261",
+    "G" = "#E76F51",
+    "Ab" = "#D62828",
+    "A" = "#9C6644",
+    "Bb" = "#6D597A",
+    "B" = "#355070"
+)
+
+chord_palette <- c(
+    "major" = "#cbcb05",
+    "minor" = "#147ad2",
+    "diminished" = "#009f9d",
+    "augmented" = "#ff9900",
+    "Unknown" = "#9A8C98"
+)
+
+music_theme <- function() {
+    theme_bw() +
+        theme(
+            plot.title = element_text(face = "bold"),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_line(color = "#E6E1D8"),
+            panel.background = element_rect(fill = "#FBF8F2"),
+            # plot.background = element_rect(fill = "#FBF8F2", color = NA)
+        )
+}
+
+# ========= plotting logic ==========
 # input: row -> per chord; col -> measure, pitch_classes, chord
 # x: chords
 # y: number detected
@@ -5,20 +45,22 @@
 plot_chord_freq <- function(chord_data) {
     counts <- as.data.frame(table(chord_data$chord), stringsAsFactors = FALSE)
     names(counts) <- c("chord", "count")
+    counts$family <- chord_family(counts$chord)
 
-    ggplot2::ggplot(
+    ggplot(
         counts,
-        ggplot2::aes(x = stats::reorder(chord, -count), y = count, fill = chord)
+        aes(x = reorder(chord, -count), y = count, fill = family)
     ) +
-        ggplot2::geom_col(show.legend = FALSE) +
-        ggplot2::labs(
+        geom_col(show.legend = FALSE) +
+        scale_fill_manual(values = chord_palette) +
+        labs(
             title = "Chord Frequency",
             x = "Chord",
             y = "Count"
         ) +
-        ggplot2::theme_minimal() +
-        ggplot2::theme(
-            axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
+        music_theme() +
+        theme(
+            axis.text.x = element_text(angle = 45, hjust = 1)
         )
 }
 
@@ -33,18 +75,20 @@ plot_pitch_class <- function(notes) {
         stringsAsFactors = FALSE
     )
     names(counts) <- c("pitch_class", "count")
+    counts$pitch_class <- factor(counts$pitch_class, levels = pitch_levels)
 
-    ggplot2::ggplot(
+    ggplot(
         counts,
-        ggplot2::aes(x = pitch_class, y = count, fill = pitch_class)
+        aes(x = pitch_class, y = count, fill = pitch_class)
     ) +
-        ggplot2::geom_col(show.legend = FALSE) +
-        ggplot2::labs(
+        geom_col(show.legend = FALSE) +
+        scale_fill_manual(values = pitch_palette) +
+        labs(
             title = "Pitch Class Distribution",
             x = "Pitch Class",
             y = "Count"
         ) +
-        ggplot2::theme_minimal()
+        music_theme()
 }
 
 # input: row -> per chord; col -> measure, pitch_classes, chord
@@ -52,42 +96,37 @@ plot_pitch_class <- function(notes) {
 # y categorical timeline of chord by measure
 # color for chord family; overlapping line chart
 plot_chord_timeline <- function(chord_data) {
-    ggplot2::ggplot(
+    ggplot(
         chord_data,
-        ggplot2::aes(x = measure, y = 1, fill = sub("^.* ", "", chord))
+        aes(x = measure, y = 1, fill = family)
     ) +
-        ggplot2::geom_tile() +
-        ggplot2::labs(
+        geom_tile() +
+        scale_fill_manual(values = chord_palette) +
+        labs(
             title = "Chord Timeline",
             x = "Measure",
             y = NULL,
             fill = "Family"
         ) +
-        ggplot2::theme_minimal() +
-        ggplot2::theme(
-            axis.text.y = ggplot2::element_blank(),
-            axis.ticks.y = ggplot2::element_blank(),
-            panel.grid = ggplot2::element_blank()
+        music_theme() +
+        theme(
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            panel.grid = element_blank()
         )
 }
-
 
 # input: output from collect_pitch_classes
 # x measures
 # y number of note events
 plot_pitch_density <- function(notes) {
-    note_rows <- notes[!notes$is_rest & !is.na(notes$pitch), ]
-    counts <- as.data.frame(table(note_rows$measure), stringsAsFactors = FALSE)
-    names(counts) <- c("measure", "count")
-    counts$measure <- as.integer(as.character(counts$measure))
-
-    ggplot2::ggplot(counts, ggplot2::aes(x = measure, y = count)) +
-        ggplot2::geom_line(color = "steelblue") +
-        ggplot2::geom_point(color = "steelblue") +
-        ggplot2::labs(
+    ggplot(notes, aes(x = measure, y = note_events)) +
+        geom_line(color = "#264653", linewidth = 0.8) +
+        geom_point(color = "#E76F51", size = 2) +
+        labs(
             title = "Pitch Density by Measure",
             x = "Measure",
             y = "Note Events"
         ) +
-        ggplot2::theme_minimal()
+        music_theme()
 }

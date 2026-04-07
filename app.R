@@ -1,4 +1,6 @@
 library(shiny)
+library(shinycssloaders)
+library(plotly)
 source("R/sheet_drawer.R")
 source("R/parse_musicxml.R")
 source("R/note_processor.R")
@@ -13,7 +15,7 @@ available_scores <- function() {
     )
 
     labels <- basename(dirname(paths))
-    stats::setNames(paths, labels)
+    setNames(paths, labels)
 }
 
 control_bar_ui <- function() {
@@ -77,7 +79,9 @@ ui <- fluidPage(
                 width = 4,
                 wellPanel(
                     h3("Selected Chords"),
-                    tableOutput("range_chords")
+                    withSpinner(
+                        tableOutput("range_chords")
+                    )
                 )
             )
         )
@@ -88,7 +92,9 @@ ui <- fluidPage(
             column(
                 width = 12,
                 wellPanel(
-                    plotOutput("breakdown_plot", height = 900)
+                    withSpinner(
+                        plotlyOutput("breakdown_plot", height = 900)
+                    )
                 )
             )
         )
@@ -110,37 +116,15 @@ server <- function(input, output, session) {
         parse_musicxml(active_music_path())
     })
 
-    pitch_data <- reactive({
-        collect_pitch_classes(notes())
+    measure_summary <- reactive({
+        build_measure_summary(notes())
     })
 
-    chord_data <- reactive({
-        data <- pitch_data()
-        data$chord <- sapply(data$pitch_classes, detect_measure_chord)
-        data
-    })
-
-    selected_notes <- reactive({
+    selected_measure_summary <- reactive({
         req(input$measure_range)
-        notes()[
-            notes()$measure >= input$measure_range[1] &
-                notes()$measure <= input$measure_range[2],
-        ]
-    })
-
-    selected_pitch_data <- reactive({
-        req(input$measure_range)
-        pitch_data()[
-            pitch_data()$measure >= input$measure_range[1] &
-                pitch_data()$measure <= input$measure_range[2],
-        ]
-    })
-
-    selected_chord_data <- reactive({
-        req(input$measure_range)
-        chord_data()[
-            chord_data()$measure >= input$measure_range[1] &
-                chord_data()$measure <= input$measure_range[2],
+        measure_summary()[
+            measure_summary()$measure >= input$measure_range[1] &
+                measure_summary()$measure <= input$measure_range[2],
         ]
     })
 
@@ -180,19 +164,22 @@ server <- function(input, output, session) {
     )
 
     output$range_chords <- renderTable({
-        req(nrow(selected_chord_data()) > 0)
-        selected_chord_data()[, c("measure", "chord")]
+        req(nrow(selected_measure_summary()) > 0)
+        selected_measure_summary()[, c("measure", "chord")]
     })
 
-    output$breakdown_plot <- renderPlot({
-        req(nrow(selected_chord_data()) > 0)
+    output$breakdown_plot <- renderPlotly({
+        req(nrow(selected_measure_summary()) > 0)
 
-        patchwork::wrap_plots(
-            plot_chord_freq(selected_chord_data()),
-            plot_pitch_class(selected_pitch_data()),
-            plot_chord_timeline(selected_chord_data()),
-            plot_pitch_density(selected_notes()),
-            ncol = 2
+        subplot(
+            ggplotly(plot_chord_freq(selected_measure_summary())),
+            ggplotly(plot_pitch_class(selected_measure_summary())),
+            ggplotly(plot_chord_timeline(selected_measure_summary())),
+            ggplotly(plot_pitch_density(selected_measure_summary())),
+            nrows = 2,
+            margin = 0.06,
+            titleX = TRUE,
+            titleY = TRUE
         )
     })
 }
