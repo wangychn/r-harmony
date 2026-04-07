@@ -2,9 +2,15 @@
 
 Shiny app for loading MusicXML piano scores, rendering selected measures, and showing simple chord / pitch summaries.
 
+## Setup
+
+- Run `source("install_packages.R")` to install required packages
+- Run `runApp("app.R")` to start application
+
 ## File Structure
 
 - `app.R`: main Shiny app
+- `install_packages.R`: installs required R packages
 - `R/parse_musicxml.R`: parses MusicXML into a note-level data frame
 - `R/note_processor.R`: builds measure-level summaries and chord labels
 - `R/generate_plots.R`: plotting helpers for the breakdown view
