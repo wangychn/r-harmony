@@ -1,3 +1,12 @@
+# Parse a MusicXML file into a note-level data frame
+# Every column -> one note/rest
+# Columns in the returned data frame:
+# - measure: measure number
+# - staff: staff number
+# - onset: start position within the measure
+# - duration: note or rest duration
+# - pitch: pitch label such as C4 or Bb5
+# - is_rest: TRUE if the event is a rest, FALSE otherwise
 parse_musicxml <- function(path) {
   empty <- data.frame(
     measure = integer(),

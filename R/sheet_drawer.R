@@ -2,10 +2,7 @@ osmd_ui <- function() {
   shiny::tagList(
     shiny::tags$head(
       shiny::tags$script(
-        src = paste0(
-          "https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.9.3",
-          "/build/opensheetmusicdisplay.min.js"
-        )
+        src = "https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.9.3/build/opensheetmusicdisplay.min.js"
       ),
       shiny::tags$script(shiny::HTML("
         let osmd;
