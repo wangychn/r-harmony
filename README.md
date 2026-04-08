@@ -1,6 +1,8 @@
 # r_harmony
 
-Shiny app for loading MusicXML piano scores, rendering selected measures, and showing simple chord / pitch summaries.
+Shiny app for loading MusicXML piano scores, rendering selected measures, and showing simple chord / pitch summaries. Written only in R, with exception of OSMD library for sheet rendering.
+
+![app_structure](assets/r_harmony_structure.png)
 
 ## Setup
 
